@@ -158,6 +158,9 @@ section{padding:120px 0;position:relative}
 .od-s i{font-style:normal;height:1em;line-height:1}
 .stage{position:relative;touch-action:pan-y}
 .stage canvas{position:absolute;inset:0;width:100%!important;height:100%!important;cursor:grab}
+.stage-fb{position:absolute;left:8%;top:6%;width:84%;height:84%;object-fit:contain;filter:drop-shadow(0 30px 34px rgba(40,20,10,.28));transition:opacity .3s}
+.stage-fb.brand{left:32%;top:10%;width:36%;height:76%;object-fit:cover;border-radius:14px;box-shadow:0 30px 50px -20px rgba(40,20,10,.5);filter:none}
+.hero-stage .stage-fb{left:4%;width:92%}
 .hero-stage{height:min(680px,78vh);opacity:0;transform:scale(.85) translateY(50px);transition:opacity 1.3s .3s var(--ease),transform 1.6s .3s var(--ease)}
 .stage-hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:rgba(255,255,255,.85);padding:7px 14px;border-radius:999px;z-index:3;pointer-events:none;white-space:nowrap;display:flex;gap:8px;align-items:center}
 .stage-hint::before{content:"";width:16px;height:16px;border-radius:50%;border:1.5px solid var(--muted);border-right-color:transparent;animation:spin 2s linear infinite}
@@ -1364,7 +1367,8 @@ function statTiles(p,v){
 
 /* ===================== 3D CORE ===================== */
 const canvas=document.createElement('canvas');
-const renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,preserveDrawingBuffer:true});
+let GL_OK=true,renderer;
+try{renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true,preserveDrawingBuffer:true});if(!renderer.getContext())throw 0;}catch(e){GL_OK=false;renderer={setPixelRatio(){},setSize(){},render(){},getContext(){return null},outputEncoding:0};}
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
 renderer.outputEncoding=THREE.sRGBEncoding;
 const scene=new THREE.Scene();
@@ -1717,7 +1721,16 @@ let stageEl=null,current=null,steam=null,heroMode=false,rot=0,vel=0,dragging=fal
 function pickStage(){const st=[...document.querySelectorAll('.page.active [data-stage]')];let best=null,bv=0;
   st.forEach(el=>{const r=el.getBoundingClientRect(),v=Math.max(0,Math.min(r.bottom,innerHeight)-Math.max(r.top,0));if(v>bv){bv=v;best=el;}});return best;}
 let brandI=0,brandT=0;
+let fbTimer=null;
+function stageFallback(el){
+  if(!el||el.querySelector('.stage-fb'))return;
+  const spec=el.dataset.stage,img=document.createElement('img');img.className='stage-fb';img.alt='';
+  if(spec==='brand'){img.classList.add('brand');let i=0;img.src=PANELS[0];clearInterval(fbTimer);fbTimer=setInterval(()=>{i=(i+1)%PANELS.length;img.style.opacity=0;setTimeout(()=>{img.src=PANELS[i];img.style.opacity=1;const bn=document.getElementById('brandNow');if(bn)bn.innerHTML='Now showing: <b>'+BRANDS[i]+'</b>';},300);},2600);}
+  else{const [id,key]=spec.split(':');img.src=photo(id,key);}
+  el.appendChild(img);const h=el.querySelector('.stage-hint');if(h)h.style.display='none';el.removeAttribute('data-cursor');
+}
 function mountStage(keepRot,el){
+  if(!GL_OK){document.querySelectorAll('.page.active [data-stage]').forEach(stageFallback);return;}
   stageEl=el||pickStage()||document.querySelector('.page.active [data-stage]');
   if(!stageEl){if(current){scene.remove(current);current=null;}return;}
   stageEl.appendChild(canvas);
@@ -1766,6 +1779,7 @@ function loop(){
 
 /* ===================== 3D RENDERS (product images) ===================== */
 (function(){
+  if(!GL_OK) return;
   const list=[['cute','2'],['joy','2'],['joy','3'],['robo','2'],['robo','3'],['infinity','3'],['infinity','4'],['infinity','milk'],['hot-cold','2-2'],['viva','std'],['jazz','std']];
   const W=IS_MOBILE?380:560,H=IS_MOBILE?440:640;
   renderer.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix();
@@ -1971,7 +1985,7 @@ document.getElementById('cmpTable').innerHTML=`<thead><tr><th></th>${CMP.map(([p
 
 const PSTATE={};
 function renderProduct(p,key){
-  const st=PSTATE[p.id]||(PSTATE[p.id]={key:p.variants[p.id==='hot-cold'?0:p.variants.length-1].key,finish:'black',water:'bubble',view:'3d'});
+  const st=PSTATE[p.id]||(PSTATE[p.id]={key:p.variants[p.id==='hot-cold'?0:p.variants.length-1].key,finish:'black',water:'bubble',view:GL_OK?'3d':'photo'});
   if(key&&p.variants.some(v=>v.key===key)) st.key=key;
   const v=V(p,st.key);
   const canBubble=v.water&&v.water.includes('Bubble'),canPump=v.water&&/pump/i.test(v.water);
@@ -1986,7 +2000,7 @@ function renderProduct(p,key){
     <div class="pd-left">
       <div class="stage pd-stage${st.view==='photo'?' photo':''}" data-stage="${spec}" data-cursor="Drag to rotate">
         <div class="dims-tag">To scale · ${v.dims.join(' × ')} mm</div>
-        <div class="view-toggle"><button data-view="3d" class="${st.view==='3d'?'on':''}">3D view</button><button data-view="photo" class="${st.view==='photo'?'on':''}">Real photo</button></div>
+        ${GL_OK?'':'<style>.view-toggle{display:none}</style>'}<div class="view-toggle"><button data-view="3d" class="${st.view==='3d'?'on':''}">3D view</button><button data-view="photo" class="${st.view==='photo'?'on':''}">Real photo</button></div>
         ${p.recipe?'<div class="badge-r">RECIPE MODE</div>':''}
         <div class="pd-photo"><img src="${photo(p.id,st.key)}" alt="${p.name}"></div>
         <div class="stage-hint">Drag to rotate</div>
