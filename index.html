@@ -132,7 +132,7 @@ section{padding:120px 0;position:relative}
 
 /* ============ HERO ============ */
 .hero{padding:30px 0 60px;overflow:hidden}
-.hero-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.hero-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0}
 .hero-bg::before{content:"";position:absolute;width:1100px;height:1100px;right:-300px;top:-380px;background:radial-gradient(circle,rgba(208,32,31,.14),transparent 60%)}
 .hero-bg::after{content:"";position:absolute;width:800px;height:800px;left:-320px;bottom:-420px;background:radial-gradient(circle,rgba(192,138,46,.16),transparent 62%)}
 .fl{position:absolute;will-change:transform}
@@ -161,6 +161,7 @@ section{padding:120px 0;position:relative}
 .stage-fb{position:absolute;left:8%;top:6%;width:84%;height:84%;object-fit:contain;filter:drop-shadow(0 30px 34px rgba(40,20,10,.28));transition:opacity .3s}
 .stage-fb.brand{left:32%;top:10%;width:36%;height:76%;object-fit:cover;border-radius:14px;box-shadow:0 30px 50px -20px rgba(40,20,10,.5);filter:none}
 .hero-stage .stage-fb{left:4%;width:92%}
+.stage-fb.turn{left:0;top:0;width:100%;height:100%;filter:drop-shadow(0 34px 34px rgba(40,20,10,.25));cursor:grab;user-select:none;-webkit-user-drag:none}
 .hero-stage{height:min(680px,78vh);opacity:0;transform:scale(.85) translateY(50px);transition:opacity 1.3s .3s var(--ease),transform 1.6s .3s var(--ease)}
 .stage-hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);background:rgba(255,255,255,.85);padding:7px 14px;border-radius:999px;z-index:3;pointer-events:none;white-space:nowrap;display:flex;gap:8px;align-items:center}
 .stage-hint::before{content:"";width:16px;height:16px;border-radius:50%;border:1.5px solid var(--muted);border-right-color:transparent;animation:spin 2s linear infinite}
@@ -859,7 +860,7 @@ footer .socials a{background:rgba(255,255,255,.06);color:#fff}
     <div class="hero-bg" id="heroBg"></div>
     <div class="wrap hero-grid">
       <div class="hero-copy">
-        <div class="tagline hf">PRESS · POUR · PRECISION <span class="mii">🇮🇳 Made in India</span></div>
+        <div class="tagline hf">PRESS · POUR · PRECISION <span class="mii"><svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true" style="border-radius:2px;box-shadow:0 0 0 .5px rgba(0,0,0,.15)"><rect width="18" height="4" fill="#FF9933"/><rect y="4" width="18" height="4" fill="#fff"/><rect y="8" width="18" height="4" fill="#138808"/><circle cx="9" cy="6" r="1.5" fill="none" stroke="#000080" stroke-width=".6"/></svg> Made in India</span></div>
         <h1><span class="ln"><span>The office cup,</span></span><span class="ln"><span class="grad">perfected for</span></span><span class="ln"><span class="grad">35 years.</span></span></h1>
         <p class="lead hf d2">BIS-certified tea, coffee and bean-to-cup vending machines, proudly made in India for offices, factories, hospitals and shops.</p>
         <div class="cta-row hf d3">
@@ -878,7 +879,7 @@ footer .socials a{background:rgba(255,255,255,.06);color:#fff}
         <div class="stage-hint">Drag to rotate</div>
       </div>
     </div>
-    <div class="scroll-cue"><i></i>Scroll</div>
+    
   </header>
 
   <div class="qstrip"><div class="mq" id="qmq"></div></div>
@@ -1697,6 +1698,8 @@ const PANELS=["c00.webp","c01.webp","c02.webp","c03.webp","c04.webp","c05.webp",
 const BRO_PAGES=["pg-01.webp","pg-02.webp","pg-03.webp","pg-04.webp","pg-05.webp","pg-06.webp","pg-07.webp","pg-08.webp","pg-09.webp","pg-10.webp","pg-11.webp","pg-12.webp","pg-13.webp","pg-14.webp","pg-15.webp"];
 const BRO_PDF='Max-Vending-Catalogue.pdf';
 window.BRAND_TEX=[];
+const PRE3={'cute:2':'r3_cute_2.webp','hot-cold:2-2':'r3_hot-cold_2-2.webp','infinity:3':'r3_infinity_3.webp','infinity:4':'r3_infinity_4.webp','infinity:milk':'r3_infinity_milk.webp','jazz:std':'r3_jazz_std.webp','joy:2':'r3_joy_2.webp','joy:3':'r3_joy_3.webp','robo:2':'r3_robo_2.webp','robo:3':'r3_robo_3.webp','viva:std':'r3_viva_std.webp'};
+const TURN=["t00.webp","t01.webp","t02.webp","t03.webp","t04.webp","t05.webp","t06.webp","t07.webp","t08.webp","t09.webp","t10.webp","t11.webp","t12.webp","t13.webp","t14.webp","t15.webp","t16.webp","t17.webp","t18.webp","t19.webp","t20.webp","t21.webp","t22.webp","t23.webp","t24.webp","t25.webp","t26.webp","t27.webp","t28.webp","t29.webp","t30.webp","t31.webp","t32.webp","t33.webp","t34.webp","t35.webp"];
 /* SAMPLE testimonials for the pitch demo only. Replace with real client testimonials before going live. */
 const TESTIMONIALS=[
  {q:'Our team used to queue for the canteen chai every break. Since the Robo machines went in, the rush clears in minutes and the taste is the same every single cup.',n:'Admin Head',r:'Manufacturing plant, NCR'},
@@ -1726,7 +1729,18 @@ function stageFallback(el){
   if(!el||el.querySelector('.stage-fb'))return;
   const spec=el.dataset.stage,img=document.createElement('img');img.className='stage-fb';img.alt='';
   if(spec==='brand'){img.classList.add('brand');let i=0;img.src=PANELS[0];clearInterval(fbTimer);fbTimer=setInterval(()=>{i=(i+1)%PANELS.length;img.style.opacity=0;setTimeout(()=>{img.src=PANELS[i];img.style.opacity=1;const bn=document.getElementById('brandNow');if(bn)bn.innerHTML='Now showing: <b>'+BRANDS[i]+'</b>';},300);},2600);}
-  else{const [id,key]=spec.split(':');img.src=photo(id,key);}
+  else if(spec.startsWith('infinity:4')&&TURN.length){
+    /* pre-rendered 3D turntable: auto-rotates, drag to spin */
+    let f=9,auto=true,drag=false,lx=0,acc=0;img.classList.add('turn');img.src=TURN[f];img.draggable=false;
+    TURN.forEach(u=>{const i=new Image();i.src=u;});
+    const set=n=>{f=((n%TURN.length)+TURN.length)%TURN.length;img.src=TURN[f];};
+    setInterval(()=>{if(auto&&!drag&&inView(el))set(f+1);},110);
+    el.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;el.setPointerCapture(e.pointerId);});
+    el.addEventListener('pointermove',e=>{if(!drag)return;acc+=e.clientX-lx;lx=e.clientX;while(Math.abs(acc)>14){set(f+(acc>0?1:-1));acc-=14*Math.sign(acc);}});
+    el.addEventListener('pointerup',()=>{drag=false;});el.addEventListener('pointercancel',()=>{drag=false;});
+    el.appendChild(img);return;
+  }
+  else{const [id,key]=spec.split(':');img.src=r3(id,key);}
   el.appendChild(img);const h=el.querySelector('.stage-hint');if(h)h.style.display='none';el.removeAttribute('data-cursor');
 }
 function mountStage(keepRot,el){
@@ -1779,7 +1793,7 @@ function loop(){
 
 /* ===================== 3D RENDERS (product images) ===================== */
 (function(){
-  if(!GL_OK) return;
+  if(!GL_OK){Object.assign(R3,PRE3);return;}
   const list=[['cute','2'],['joy','2'],['joy','3'],['robo','2'],['robo','3'],['infinity','3'],['infinity','4'],['infinity','milk'],['hot-cold','2-2'],['viva','std'],['jazz','std']];
   const W=IS_MOBILE?380:560,H=IS_MOBILE?440:640;
   renderer.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix();
@@ -1795,7 +1809,7 @@ function loop(){
   const bg=document.getElementById('heroBg');
   const bean=(s,c)=>`<svg width="${s}" height="${s*.75}" viewBox="0 0 40 30"><ellipse cx="20" cy="15" rx="19" ry="13.5" fill="${c}"/><path d="M4 16 C14 7 26 23 36 14" stroke="#2a1208" stroke-width="2.6" fill="none" stroke-linecap="round"/></svg>`;
   const leaf=(s)=>`<svg width="${s}" height="${s}" viewBox="0 0 40 40"><path d="M6 34 C6 14 18 4 36 4 C36 22 26 34 6 34Z" fill="#6f9a3a"/><path d="M8 32 C16 24 24 16 32 8" stroke="#4d7426" stroke-width="2" fill="none"/></svg>`;
-  const items=[[6,18,bean(34,'#6b3612'),.6],[12,72,leaf(30),.4],[44,8,bean(22,'#8a4b22'),.3],[52,86,bean(28,'#5a2c12'),.5],[88,12,leaf(26),.7],[94,64,bean(36,'#6b3612'),.9],[70,90,leaf(22),.35],[30,92,bean(18,'#8a4b22'),.25],[80,38,bean(16,'#5a2c12'),.8]];
+  const items=[[2,96,bean(30,'#6b3612'),.6],[47,4,bean(22,'#8a4b22'),.3],[55,90,bean(28,'#5a2c12'),.5],[90,8,leaf(26),.7],[96,58,bean(34,'#6b3612'),.9],[74,94,leaf(22),.35],[50,46,leaf(20),.4],[84,30,bean(16,'#5a2c12'),.8]];
   bg.insertAdjacentHTML('beforeend',items.map(([x,y,svg,d])=>`<div class="fl" data-d="${d}" style="left:${x}%;top:${y}%;opacity:${.35+d*.5}">${svg}</div>`).join(''));
   const fls=[...bg.querySelectorAll('.fl')];
   addEventListener('pointermove',e=>{if(!inView(bg))return;const x=e.clientX/innerWidth-.5,y=e.clientY/innerHeight-.5;fls.forEach(f=>{const d=+f.dataset.d;f.style.transform=`translate(${x*-60*d}px,${y*-60*d}px)`;});},{passive:true});
@@ -1985,7 +1999,7 @@ document.getElementById('cmpTable').innerHTML=`<thead><tr><th></th>${CMP.map(([p
 
 const PSTATE={};
 function renderProduct(p,key){
-  const st=PSTATE[p.id]||(PSTATE[p.id]={key:p.variants[p.id==='hot-cold'?0:p.variants.length-1].key,finish:'black',water:'bubble',view:GL_OK?'3d':'photo'});
+  const st=PSTATE[p.id]||(PSTATE[p.id]={key:p.variants[p.id==='hot-cold'?0:p.variants.length-1].key,finish:'black',water:'bubble',view:'3d'});
   if(key&&p.variants.some(v=>v.key===key)) st.key=key;
   const v=V(p,st.key);
   const canBubble=v.water&&v.water.includes('Bubble'),canPump=v.water&&/pump/i.test(v.water);
@@ -2000,7 +2014,7 @@ function renderProduct(p,key){
     <div class="pd-left">
       <div class="stage pd-stage${st.view==='photo'?' photo':''}" data-stage="${spec}" data-cursor="Drag to rotate">
         <div class="dims-tag">To scale · ${v.dims.join(' × ')} mm</div>
-        ${GL_OK?'':'<style>.view-toggle{display:none}</style>'}<div class="view-toggle"><button data-view="3d" class="${st.view==='3d'?'on':''}">3D view</button><button data-view="photo" class="${st.view==='photo'?'on':''}">Real photo</button></div>
+        <div class="view-toggle"><button data-view="3d" class="${st.view==='3d'?'on':''}">3D view</button><button data-view="photo" class="${st.view==='photo'?'on':''}">Real photo</button></div>
         ${p.recipe?'<div class="badge-r">RECIPE MODE</div>':''}
         <div class="pd-photo"><img src="${photo(p.id,st.key)}" alt="${p.name}"></div>
         <div class="stage-hint">Drag to rotate</div>
